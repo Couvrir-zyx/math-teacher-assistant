@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>数学教师助手 - 图片话术生成工具</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-chalkboard-teacher"></i> 数学教师助手</h1>
+            <p class="subtitle">上传课堂图片，自动生成微信群话术</p>
+        </header>
+
+        <div class="main-content">
+            <!-- 左侧：图片上传和识别区域 -->
+            <div class="left-panel">
+                <div class="upload-area" id="uploadArea">
+                    <div class="upload-icon">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                    </div>
+                    <h3>上传课堂图片</h3>
+                    <p>拖放图片文件到此区域，或点击选择文件</p>
+                    <input type="file" id="fileInput" accept="image/*" hidden>
+                    <button class="btn btn-primary" id="selectFileBtn">
+                        <i class="fas fa-image"></i> 选择图片
+                    </button>
+                    <div class="file-types">
+                        支持格式：JPG、PNG、GIF、BMP
+                    </div>
+                </div>
+
+                <div class="image-preview" id="imagePreview" style="display: none;">
+                    <div class="preview-header">
+                        <h4>图片预览</h4>
+                        <button class="btn btn-small" id="changeImageBtn">
+                            <i class="fas fa-exchange-alt"></i> 更换图片
+                        </button>
+                    </div>
+                    <div class="preview-container">
+                        <img id="previewImage" src="" alt="预览图片">
+                    </div>
+                    <div class="preview-actions">
+                        <button class="btn btn-secondary" id="recognizeBtn">
+                            <i class="fas fa-search"></i> 识别图片内容
+                        </button>
+                        <button class="btn btn-danger" id="clearImageBtn">
+                            <i class="fas fa-trash"></i> 清除图片
+                        </button>
+                    </div>
+                </div>
+
+                <div class="recognition-result" id="recognitionResult" style="display: none;">
+                    <div class="result-header">
+                        <h4><i class="fas fa-file-alt"></i> 识别结果</h4>
+                        <div class="recognition-status" id="recognitionStatus">
+                            <i class="fas fa-spinner fa-spin"></i> 识别中...
+                        </div>
+                    </div>
+                    <div class="result-content">
+                        <textarea id="recognizedText" placeholder="识别到的文字将显示在这里..." readonly></textarea>
+                        <div class="result-actions">
+                            <button class="btn btn-small" id="copyTextBtn">
+                                <i class="fas fa-copy"></i> 复制文字
+                            </button>
+                            <button class="btn btn-small" id="clearTextBtn">
+                                <i class="fas fa-eraser"></i> 清空
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 右侧：话术生成和编辑区域 -->
+            <div class="right-panel">
+                <div class="template-selection">
+                    <h3><i class="fas fa-layer-group"></i> 选择话术模板</h3>
+                    <div class="template-buttons">
+                        <button class="template-btn active" data-template="new-lesson">
+                            <i class="fas fa-book-open"></i> 新课讲解
+                        </button>
+                        <button class="template-btn" data-template="exercise">
+                            <i class="fas fa-pencil-alt"></i> 习题讲解
+                        </button>
+                        <button class="template-btn" data-template="review">
+                            <i class="fas fa-redo"></i> 复习总结
+                        </button>
+                        <button class="template-btn" data-template="custom">
+                            <i class="fas fa-edit"></i> 自定义模板
+                        </button>
+                    </div>
+                </div>
+
+                <div class="template-preview">
+                    <h4>模板预览</h4>
+                    <div class="template-content" id="templatePreview">
+                        【{日期}课堂总结】
+
+📚 教学内容：{教学内容}
+
+🎯 重点难点：
+{重点内容}
+
+👨‍🎓 学生表现：
+• 积极参与：{学生姓名}
+• 掌握情况：{掌握程度}
+• 需要加强：{薄弱环节}
+
+💡 课后建议：
+1. 复习{知识点}
+2. 完成{作业}
+                    </div>
+                </div>
+
+                <div class="speech-editor">
+                    <h3><i class="fas fa-edit"></i> 编辑生成的话术</h3>
+                    <div class="editor-tools">
+                        <button class="tool-btn" id="fillTemplateBtn">
+                            <i class="fas fa-magic"></i> 自动填充
+                        </button>
+                        <button class="tool-btn" id="resetTemplateBtn">
+                            <i class="fas fa-undo"></i> 重置模板
+                        </button>
+                        <div class="variable-list">
+                            <span class="variable-tag">{日期}</span>
+                            <span class="variable-tag">{教学内容}</span>
+                            <span class="variable-tag">{重点内容}</span>
+                            <span class="variable-tag">{学生姓名}</span>
+                        </div>
+                    </div>
+                    <textarea id="speechEditor" placeholder="编辑你的话术内容..."></textarea>
+                    <div class="editor-actions">
+                        <button class="btn btn-success" id="generateSpeechBtn">
+                            <i class="fas fa-robot"></i> 智能生成
+                        </button>
+                        <button class="btn btn-primary" id="copySpeechBtn">
+                            <i class="fas fa-copy"></i> 复制话术
+                        </button>
+                        <button class="btn btn-secondary" id="saveTemplateBtn">
+                            <i class="fas fa-save"></i> 保存模板
+                        </button>
+                    </div>
+                </div>
+
+                <div class="history-section">
+                    <h3><i class="fas fa-history"></i> 历史记录</h3>
+                    <div class="history-list" id="historyList">
+                        <div class="history-empty">
+                            <i class="fas fa-clock"></i>
+                            <p>暂无历史记录</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <div class="footer-content">
+                <p>数学教师助手 v1.0 | 专为高中数学教师设计</p>
+                <p class="tips">
+                    <i class="fas fa-lightbulb"></i> 提示：生成的话术可以直接复制粘贴到微信群
+                </p>
+            </div>
+        </footer>
+    </div>
+
+    <!-- 模态框 -->
+    <div class="modal" id="successModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-check-circle"></i> 操作成功</h3>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p id="modalMessage">话术已复制到剪贴板！</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary modal-close-btn">确定</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 加载脚本 -->
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
