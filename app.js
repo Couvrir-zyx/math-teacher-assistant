@@ -3,6 +3,16 @@ let currentImage = null;
 let recognizedText = '';
 let currentTemplate = 'new-lesson';
 let tesseractWorker = null;
+let isLongImage = false;
+let imageSegments = [];
+
+// 长图处理配置
+const LONG_IMAGE_CONFIG = {
+    minHeightForSplit: 1500, // 高度超过1500px视为长图
+    segmentHeight: 800,      // 每个分割段的高度
+    overlapPixels: 100,      // 分割重叠像素，避免切割文字
+    maxSegments: 5           // 最大分割段数
+};
 
 // DOM元素
 const elements = {
@@ -242,25 +252,173 @@ function loadImage(file) {
     reader.readAsDataURL(file);
 }
 
-// 识别图片内容
+// ==================== 长图处理函数 ====================
+
+// 检测是否为长图
+function detectLongImage(imgElement) {
+    return new Promise((resolve) => {
+        const img = new Image();
+        img.onload = function() {
+            const isLong = img.height > LONG_IMAGE_CONFIG.minHeightForSplit;
+            resolve({
+                isLong: isLong,
+                width: img.width,
+                height: img.height,
+                segments: isLong ? calculateSegments(img.height) : 1
+            });
+        };
+        img.src = currentImage;
+    });
+}
+
+// 计算分割段数
+function calculateSegments(totalHeight) {
+    const segments = Math.ceil(totalHeight / LONG_IMAGE_CONFIG.segmentHeight);
+    return Math.min(segments, LONG_IMAGE_CONFIG.maxSegments);
+}
+
+// 创建图片分割的Canvas
+function createImageSegment(imgElement, segmentIndex, imageInfo) {
+    return new Promise((resolve) => {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        
+        const segmentHeight = LONG_IMAGE_CONFIG.segmentHeight;
+        const overlap = LONG_IMAGE_CONFIG.overlapPixels;
+        const startY = segmentIndex * segmentHeight - (segmentIndex > 0 ? overlap : 0);
+        const endY = Math.min(startY + segmentHeight + overlap, imageInfo.height);
+        const actualHeight = endY - startY;
+        
+        canvas.width = imageInfo.width;
+        canvas.height = actualHeight;
+        
+        // 绘制分割后的图片
+        ctx.drawImage(
+            imgElement,
+            0, startY, imageInfo.width, actualHeight,
+            0, 0, imageInfo.width, actualHeight
+        );
+        
+        resolve({
+            canvas: canvas,
+            segmentIndex: segmentIndex,
+            startY: startY,
+            height: actualHeight
+        });
+    });
+}
+
+// 识别单个图片段
+async function recognizeSegment(canvasData, segmentIndex, totalSegments) {
+    try {
+        const worker = await Tesseract.createWorker('chi_sim+eng');
+        const { data: { text } } = await worker.recognize(canvasData.canvas.toDataURL());
+        await worker.terminate();
+        
+        return {
+            segmentIndex: segmentIndex,
+            text: text.trim(),
+            progress: Math.round(((segmentIndex + 1) / totalSegments) * 100)
+        };
+    } catch (error) {
+        console.error(`段${segmentIndex}识别失败:`, error);
+        return {
+            segmentIndex: segmentIndex,
+            text: `[第${segmentIndex + 1}段识别失败]`,
+            progress: Math.round(((segmentIndex + 1) / totalSegments) * 100)
+        };
+    }
+}
+
+// 合并分段识别结果
+function mergeSegmentResults(results) {
+    // 按段索引排序
+    results.sort((a, b) => a.segmentIndex - b.segmentIndex);
+    
+    // 合并文本，添加段分隔标记
+    let mergedText = '';
+    results.forEach((result, index) => {
+        if (result.text) {
+            mergedText += result.text;
+            if (index < results.length - 1) {
+                mergedText += '\n\n---\n\n'; // 段分隔符
+            }
+        }
+    });
+    
+    return mergedText;
+}
+
+// 识别图片内容（支持长图）
 async function recognizeImage() {
     if (!currentImage) {
         showModal('请先上传图片');
         return;
     }
     
-    elements.recognitionStatus.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 识别中...';
+    elements.recognitionStatus.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 检测图片尺寸...';
     elements.recognitionResult.style.display = 'block';
     
     try {
-        // 使用Tesseract.js进行OCR识别
-        const worker = await Tesseract.createWorker('chi_sim+eng'); // 中文+英文识别
-        const { data: { text } } = await worker.recognize(currentImage);
-        await worker.terminate();
+        // 检测是否为长图
+        const imageInfo = await detectLongImage();
+        isLongImage = imageInfo.isLong;
         
-        recognizedText = text.trim();
-        elements.recognizedText.value = recognizedText;
-        elements.recognitionStatus.innerHTML = '<i class="fas fa-check-circle"></i> 识别完成';
+        if (isLongImage) {
+            elements.recognitionStatus.innerHTML = `<i class="fas fa-spinner fa-spin"></i> 检测到长图，正在分割为${imageInfo.segments}段识别...`;
+            
+            // 创建图片元素用于分割
+            const img = new Image();
+            img.src = currentImage;
+            
+            await new Promise(resolve => {
+                img.onload = async () => {
+                    // 创建所有分割段
+                    const segmentPromises = [];
+                    for (let i = 0; i < imageInfo.segments; i++) {
+                        segmentPromises.push(createImageSegment(img, i, imageInfo));
+                    }
+                    
+                    const segments = await Promise.all(segmentPromises);
+                    
+                    // 识别所有分割段
+                    const recognitionPromises = segments.map(segmentData => 
+                        recognizeSegment(segmentData, segmentData.segmentIndex, imageInfo.segments)
+                    );
+                    
+                    // 更新进度
+                    const progressInterval = setInterval(() => {
+                        const completed = recognitionPromises.filter(p => p.status === 'fulfilled').length;
+                        const progress = Math.round((completed / imageInfo.segments) * 100);
+                        elements.recognitionStatus.innerHTML = 
+                            `<i class="fas fa-spinner fa-spin"></i> 长图识别中... ${progress}%`;
+                    }, 500);
+                    
+                    const results = await Promise.all(recognitionPromises);
+                    clearInterval(progressInterval);
+                    
+                    // 合并结果
+                    recognizedText = mergeSegmentResults(results);
+                    elements.recognizedText.value = recognizedText;
+                    elements.recognitionStatus.innerHTML = 
+                        `<i class="fas fa-check-circle"></i> 长图识别完成（${imageInfo.segments}段）`;
+                    
+                    resolve();
+                };
+            });
+            
+        } else {
+            // 普通图片识别
+            elements.recognitionStatus.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 识别中...';
+            
+            const worker = await Tesseract.createWorker('chi_sim+eng');
+            const { data: { text } } = await worker.recognize(currentImage);
+            await worker.terminate();
+            
+            recognizedText = text.trim();
+            elements.recognizedText.value = recognizedText;
+            elements.recognitionStatus.innerHTML = '<i class="fas fa-check-circle"></i> 识别完成';
+        }
         
         // 自动填充模板
         setTimeout(() => fillTemplate(), 500);
