@@ -448,3 +448,399 @@ footer {
     align-items: center;
     gap: 5px;
 }
+
+/* ==================== AI指示器样式 ==================== */
+
+.ai-indicator {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: -1px;
+    padding: 15px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+    animation: slideIn 0.3s ease-out;
+}
+
+.ai-indicator-content {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.ai-indicator .fa-brain {
+    font-size: 1.5rem;
+    color: #ffd700;
+}
+
+.ai-status {
+    flex: 1;
+    font-weight: 600;
+    font-size: -1rem;
+}
+
+.ai-progress {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 120px;
+}
+
+.ai-progress-bar {
+    flex: 1;
+    height: 6px;
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.ai-progress-bar::after {
+    content: '';
+    display: block;
+    height: 100%;
+    background: #4cd964;
+    border-radius: 3px;
+    transition: width 0.3s ease;
+}
+
+.ai-progress-text {
+    font-size: 0.9rem;
+    font-weight: 600;
+    min-width: 40px;
+    text-align: right;
+}
+
+/* AI分析结果样式 */
+.ai-analysis-result {
+    background: #f8f9fa;
+    border-left: 4px solid #667eea;
+    padding: 15px;
+    margin: 15px 0;
+    border-radius: 0 8px 8px 0;
+}
+
+.ai-analysis-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+    color: #2c3e50;
+    font-weight: 600;
+}
+
+.ai-analysis-content {
+    color: #34495e;
+    line-height: 1.5;
+}
+
+.ai-tag {
+    display: inline-block;
+    background: #e3f2fd;
+    color: #1976d2;
+    padding: 4px 10px;
+    border-radius: 15px;
+    font-size: 0.85rem;
+    margin: 2px 4px;
+    border: 1px solid #bbdefb;
+}
+
+/* 智能建议样式 */
+.ai-suggestion {
+    background: linear-gradient(135deg, #e3f2fd 0%, #f3e5f5 100%);
+    border: 1px solid #bbdefb;
+    padding: 15px;
+    margin: 15px 0;
+    border-radius: 8px;
+}
+
+.ai-suggestion-header {
+    display: flex;
+    align-items: center;
+    gap: -1px;
+    margin-bottom: 10px;
+    color: #7b1fa2;
+}
+
+.ai-suggestion-content {
+    color: #455a64;
+}
+
+/* 动画效果 */
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.7;
+    }
+}
+
+.ai-pulse {
+    animation: pulse 2s infinite;
+}
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+    .ai-indicator-content {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+    
+    .ai-progress {
+        width: 100%;
+    }
+}
+
+/* ==================== API配置模态框样式 ==================== */
+
+.api-config-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.api-config-modal .modal-content {
+    background: white;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 600px;
+    max-height: 80vh;
+    overflow-y: auto;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+.api-config-modal .modal-header {
+    padding: 20px;
+    border-bottom: 1px solid #eee;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.api-config-modal .modal-header h3 {
+    color: #2c3e50;
+    margin: 0;
+}
+
+.api-config-modal .modal-close {
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    color: #7f8c8d;
+}
+
+.api-config-modal .modal-body {
+    padding: 20px;
+}
+
+.api-config-modal .modal-footer {
+    padding: 20px;
+    border-top: 1px solid #eee;
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+}
+
+/* API提供商标签页 */
+.api-provider-tabs {
+    display: flex;
+    gap: 5px;
+    margin-bottom: 20px;
+    border-bottom: 2px solid #eee;
+}
+
+.provider-tab {
+    padding: 10px 20px;
+    background: none;
+    border: none;
+    border-bottom: 3px solid transparent;
+    cursor: pointer;
+    font-weight: 600;
+    color: #7f8c8d;
+    transition: all 0.3s;
+}
+
+.provider-tab.active {
+    color: #3498db;
+    border-bottom-color: #3498db;
+}
+
+.provider-tab:hover {
+    color: #2980b9;
+}
+
+/* API配置表单 */
+.api-config-form {
+    margin-bottom: 20px;
+}
+
+.api-config-form h4 {
+    color: #2c3e50;
+    margin-bottom: 10px;
+}
+
+.api-description {
+    color: #7f8c8d;
+    font-size: 0.9rem;
+    margin-bottom: 15px;
+    line-height: 1.5;
+}
+
+.api-description a {
+    color: #3498db;
+    text-decoration: none;
+}
+
+.api-description a:hover {
+    text-decoration: underline;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    color: #34495e;
+    font-weight: 600;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 1rem;
+}
+
+.form-group input:focus {
+    outline: none;
+    border-color: #3498db;
+    box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+}
+
+.form-status {
+    margin-top: 10px;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 0.9rem;
+}
+
+.status-success {
+    background: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.status-error {
+    background: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+/* API使用说明 */
+.api-usage {
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 8px;
+    margin-top: -1px;
+}
+
+.api-usage h5 {
+    color: #2c3e50;
+    margin-bottom: 10px;
+}
+
+.api-usage ul {
+    margin: 0;
+    padding-left: 20px;
+    color: #34495e;
+}
+
+.api-usage li {
+    margin-bottom: 5px;
+    line-height: 1.5;
+}
+
+/* API配置按钮 */
+.api-config-btn {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: #3498db;
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    transition: background 0.3s;
+}
+
+.api-config-btn:hover {
+    background: #2980b9;
+}
+
+/* API模式指示器 */
+.api-mode-indicator {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    background: #27ae60;
+    color: white;
+    padding: 5px 10px;
+    border-radius: 15px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.api-mode-indicator.simulated {
+    background: #f39c12;
+}
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+    .api-config-modal .modal-content {
+        width: 95%;
+        max-height: 90vh;
+    }
+    
+    .api-provider-tabs {
+        flex-wrap: wrap;
+    }
+    
+    .provider-tab {
+        flex: 1;
+        text-align: center;
+        padding: 8px 10px;
+        font-size: 0.9rem;
+    }
+    
+    .api-config-btn {
+        position: static;
+        margin-top: 10px;
+    }
+}
