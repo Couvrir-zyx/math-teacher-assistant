@@ -1,6 +1,6 @@
 {
   "name": "math-teacher-workbench",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "private": true,
   "type": "module",
   "description": "高中数学课堂反馈与学生课次档案 PWA",

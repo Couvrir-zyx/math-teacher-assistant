@@ -1,14 +1,14 @@
-const CACHE_NAME = "math-teacher-workbench-v03";
+const CACHE_NAME = "math-teacher-workbench-v021";
 const SHELL = [
   "./",
   "./index.html",
-  "./styles-v2.css",
-  "./app-v2.js",
-  "./api-v2.js",
-  "./store-v2.js",
-  "./cloud-v2.js",
+  "./styles-v2.css?v=0.2.1",
+  "./app-v2.js?v=0.2.1",
+  "./api-v2.js?v=0.2.1",
+  "./store-v2.js?v=0.2.1",
+  "./cloud-v2.js?v=0.2.1",
   "./supabase-schema.sql",
-  "./card-v2.js",
+  "./card-v2.js?v=0.2.1",
   "./manifest.webmanifest",
   "./icon.svg"
 ];
