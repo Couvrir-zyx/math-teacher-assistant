@@ -79,6 +79,8 @@ function init() {
   hydrateSettings();
   hydrateCloud();
   renderAll();
+  const initialView = location.hash.replace("#", "");
+  if (["write", "students", "settings"].includes(initialView)) setView(initialView, false);
   if (!state.settings.apiKey && !localStorage.getItem("math-teacher-workbench.setupSeen")) {
     setTimeout(openSetupModal, 350);
   }
@@ -208,6 +210,15 @@ function bindSettings() {
   $("#cloud-pull").addEventListener("click", () => pullCloud(false));
   $("#cloud-logout").addEventListener("click", cloudLogout);
   $("#copy-cloud-schema").addEventListener("click", copyCloudSchema);
+  for (const id of ["cloud-url", "cloud-anon-key", "cloud-email"]) {
+    $(`#${id}`).addEventListener("change", () => {
+      try {
+        state.cloudConfig = cloudInputs();
+      } catch {
+        // Partial setup is allowed; login will validate the complete configuration.
+      }
+    });
+  }
 }
 
 function renderAll() {
