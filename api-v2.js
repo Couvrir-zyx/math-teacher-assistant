@@ -46,28 +46,53 @@ const LEVEL_RULES = {
 export async function analyzeImages(images, context, settings, onProgress = () => {}) {
   if (!images.length) throw new Error("请至少上传一张课堂截图。");
   onProgress("正在读取课堂截图…", 12);
-
-  const content = [{
-    type: "text",
-    text: `${EXTRACT_PROMPT}
+  const basePrompt = `${EXTRACT_PROMPT}
 
 补充信息：
 - 本次反馈对象：${context.group ? "组课（多位同学）" : context.studentName}
 - 老师补充：${context.note || "无"}
-- 老师指定的专题：${context.topic || "未指定，请根据截图判断"}`
-  }];
+- 老师指定的专题：${context.topic || "未指定，请根据截图判断"}`;
 
-  for (const image of images) {
-    content.push({ type: "image_url", image_url: { url: image.dataUrl } });
+  const parts = [];
+  for (let index = 0; index < images.length; index++) {
+    onProgress("正在读取课堂截图…", 12 + Math.round(index / images.length * 30));
+    const raw = await callModel(settings, [
+      { role: "system", content: "你是严谨的高中数学教研助理，只输出可解析的 JSON。" },
+      {
+        role: "user",
+        content: [
+          { type: "text", text: `${basePrompt}\n- 当前是第 ${index + 1} / ${images.length} 张截图。` },
+          { type: "image_url", image_url: { url: images[index].dataUrl } }
+        ]
+      }
+    ], 3000);
+    try {
+      parts.push(parseJsonObject(raw));
+    } catch {
+      // A single unreadable image should not discard the rest of the lesson.
+    }
   }
-
-  const raw = await callModel(settings, [
-    { role: "system", content: "你是严谨的高中数学教研助理，只输出可解析的 JSON。" },
-    { role: "user", content }
-  ], 4200);
+  if (!parts.length) throw new Error("没有识别出有效课堂内容，请换一张更清晰的截图重试。");
 
   onProgress("正在整理课堂板块…", 34);
-  const parsed = parseJsonObject(raw);
+  let merged = parts[0];
+  if (parts.length > 1) {
+    const mergeRaw = await callModel(settings, [
+      { role: "system", content: "你负责合并同一节课的多张截图分析结果，只输出 JSON。" },
+      {
+        role: "user",
+        content: `下面是同一节高中数学课多张截图分别得到的 JSON。请合并去重：
+1. topic 合成一个完整但不超过 30 字的专题名；
+2. 相同或高度相近的板块合并；
+3. 保留老师真正讲过的方法和可能卡点；
+4. 只输出与输入相同结构的 JSON，不要解释。
+
+${JSON.stringify(parts)}`
+      }
+    ], 3600);
+    merged = parseJsonObject(mergeRaw);
+  }
+  const parsed = merged;
   if (!Array.isArray(parsed.modules) || !parsed.modules.length) {
     throw new Error("没有识别出有效课堂内容，请换一张更清晰的截图重试。");
   }

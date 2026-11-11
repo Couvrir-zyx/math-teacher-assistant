@@ -44,6 +44,34 @@ test("课堂截图解析为结构化板块", async () => {
   assert.match(result.topic, /椭圆/);
 });
 
+test("多张截图分别识别后合并板块", async () => {
+  let calls = 0;
+  globalThis.fetch = async () => {
+    calls += 1;
+    if (calls <= 2) {
+      return mockResponse(JSON.stringify({
+        topic: calls === 1 ? "圆" : "椭圆",
+        modules: [{ name: calls === 1 ? "圆的最值" : "椭圆定义" }]
+      }));
+    }
+    return mockResponse(JSON.stringify({
+      topic: "圆与椭圆",
+      modules: [{ name: "圆的最值" }, { name: "椭圆定义" }]
+    }));
+  };
+  const result = await analyzeImages([
+    { dataUrl: "data:image/png;base64,AAAA" },
+    { dataUrl: "data:image/png;base64,BBBB" }
+  ], {
+    studentName: "测试学生",
+    group: false,
+    note: ""
+  }, settings);
+  assert.equal(calls, 3);
+  assert.equal(result.topic, "圆与椭圆");
+  assert.equal(result.modules.length, 2);
+});
+
 test("组课反馈使用多人称呼并保留四段", async () => {
   globalThis.fetch = async (_url, options) => {
     const body = JSON.parse(options.body);

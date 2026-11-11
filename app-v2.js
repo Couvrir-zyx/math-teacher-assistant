@@ -476,9 +476,11 @@ function renderStudentLessons() {
     els.lessonList.appendChild(button);
   });
 
-  const first = summaries[0] || lessons[0];
-  if (first) selectLesson(first, Boolean(first.summary));
-  else {
+  if (summaries[0]) {
+    selectLesson(summaries[0], true);
+  } else if (lessons[0]) {
+    selectLesson(lessons[0], false);
+  } else {
     els.detailLevel.textContent = "";
     els.detailTopic.textContent = "暂无课次";
     els.detailMeta.textContent = "";
@@ -535,7 +537,6 @@ async function handleSummary() {
     state.data = store.getData();
     state.selectedLesson = { ...summary, summary: true };
     renderAll();
-    renderStudentLessons();
     toast("阶段总结已生成并保存");
   } catch (error) {
     toast(error.message, true);
