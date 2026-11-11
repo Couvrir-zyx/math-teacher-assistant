@@ -1,4 +1,4 @@
-const CACHE_NAME = "math-teacher-workbench-v02";
+const CACHE_NAME = "math-teacher-workbench-v03";
 const SHELL = [
   "./",
   "./index.html",
@@ -7,6 +7,7 @@ const SHELL = [
   "./api-v2.js",
   "./store-v2.js",
   "./cloud-v2.js",
+  "./supabase-schema.sql",
   "./card-v2.js",
   "./manifest.webmanifest",
   "./icon.svg"

@@ -300,6 +300,15 @@
               <span class="connection-badge" id="cloud-badge">未登录</span>
             </div>
             <p class="section-copy">使用你自己的 Supabase 项目保存学生课次。DeepSeek Key 不会上传；云同步只包含学生姓名、课次和反馈正文。</p>
+            <ol class="setup-steps">
+              <li><strong>注册并新建项目</strong><span>打开 Supabase，使用 GitHub 登录，点 New project。名称可填 math-teacher-workbench。</span></li>
+              <li><strong>复制并执行建表脚本</strong><span>点下方「复制建表脚本」，在 Supabase 左侧 SQL Editor 粘贴并运行。</span></li>
+              <li><strong>填写两项配置</strong><span>在 Project Settings → API 复制 Project URL 和 anon public key，填到下面。</span></li>
+            </ol>
+            <div class="settings-actions cloud-help-actions">
+              <a class="secondary-button" href="https://supabase.com/dashboard" target="_blank" rel="noreferrer">打开 Supabase</a>
+              <button class="secondary-button" id="copy-cloud-schema">复制建表脚本</button>
+            </div>
             <div class="cloud-grid">
               <label class="field field-wide">
                 <span>Supabase Project URL</span>
@@ -320,7 +329,7 @@
             </div>
             <div class="settings-actions cloud-actions">
               <button class="primary-small" id="cloud-login">登录并同步</button>
-              <button class="secondary-button" id="cloud-signup">创建账号</button>
+              <button class="secondary-button" id="cloud-signup">创建工作台账号</button>
               <button class="secondary-button" id="cloud-push">上传本机档案</button>
               <button class="secondary-button" id="cloud-pull">从云端拉取</button>
               <button class="text-button" id="cloud-logout">退出</button>

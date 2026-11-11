@@ -570,6 +570,42 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 14px;
 }
+.setup-steps {
+  margin: 0 22px 18px;
+  padding: 0;
+  display: grid;
+  gap: 10px;
+  list-style: none;
+  counter-reset: cloud-step;
+}
+.setup-steps li {
+  position: relative;
+  padding: 12px 14px 12px 48px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #fbfcfe;
+}
+.setup-steps li::before {
+  counter-increment: cloud-step;
+  content: counter(cloud-step);
+  position: absolute;
+  left: 14px;
+  top: 12px;
+  width: 23px;
+  height: 23px;
+  display: grid;
+  place-items: center;
+  border-radius: 8px;
+  color: var(--primary-deep);
+  background: var(--primary-soft);
+  font-size: 11px;
+  font-weight: 800;
+}
+.setup-steps strong, .setup-steps span { display: block; }
+.setup-steps strong { font-size: 12px; }
+.setup-steps span { margin-top: 2px; color: var(--muted); font-size: 11px; }
+.cloud-help-actions { margin-bottom: 17px; }
+.cloud-help-actions .secondary-button { text-decoration: none; }
 .section-copy { margin: 0; padding: 0 22px 20px; color: var(--muted); }
 .settings-card > .field { padding: 0 22px 15px; }
 .secret-field { display: flex; align-items: center; gap: 8px; }

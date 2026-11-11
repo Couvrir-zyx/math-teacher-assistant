@@ -207,6 +207,7 @@ function bindSettings() {
   $("#cloud-push").addEventListener("click", () => syncCloud(false));
   $("#cloud-pull").addEventListener("click", () => pullCloud(false));
   $("#cloud-logout").addEventListener("click", cloudLogout);
+  $("#copy-cloud-schema").addEventListener("click", copyCloudSchema);
 }
 
 function renderAll() {
@@ -754,6 +755,16 @@ function openCloudSetup() {
   setView("settings");
   $("#cloud-url").focus();
   toast("请先填写并登录 Supabase 云同步", true);
+}
+
+async function copyCloudSchema() {
+  try {
+    const response = await fetch("./supabase-schema.sql", { cache: "no-store" });
+    if (!response.ok) throw new Error("读取建表脚本失败");
+    await copyText(await response.text());
+  } catch (error) {
+    toast(error.message, true);
+  }
 }
 
 function exportData() {
