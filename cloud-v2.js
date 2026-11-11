@@ -1,14 +1,15 @@
 const CONFIG_KEY = "math-teacher-workbench.cloud.config.v1";
 const SESSION_KEY = "math-teacher-workbench.cloud.session.v1";
 const STATE_ID = "primary";
+const DEFAULT_CONFIG = {
+  url: "https://fcnqmibrgiilphpkwrfb.supabase.co",
+  anonKey: "sb_publishable_5rXrycWPE4eX9TwwT9I8Zw_7b0RoX3u",
+  email: ""
+};
 
 export const cloud = {
   getConfig() {
-    return read(CONFIG_KEY, {
-      url: "",
-      anonKey: "",
-      email: ""
-    });
+    return { ...DEFAULT_CONFIG, ...read(CONFIG_KEY, {}) };
   },
 
   saveConfig(config) {

@@ -1,7 +1,7 @@
-import { store, makeId, todayString } from "./store-v2.js?v=0.2.2";
-import { analyzeImages, generateFeedback, generateSummary, testConnection, visibleLength } from "./api-v2.js?v=0.2.2";
-import { downloadFeedbackCard } from "./card-v2.js?v=0.2.2";
-import { cloud, mergeData } from "./cloud-v2.js?v=0.2.2";
+import { store, makeId, todayString } from "./store-v2.js?v=0.2.3";
+import { analyzeImages, generateFeedback, generateSummary, testConnection, visibleLength } from "./api-v2.js?v=0.2.3";
+import { downloadFeedbackCard } from "./card-v2.js?v=0.2.3";
+import { cloud, mergeData } from "./cloud-v2.js?v=0.2.3";
 
 const $ = selector => document.querySelector(selector);
 const $$ = selector => [...document.querySelectorAll(selector)];

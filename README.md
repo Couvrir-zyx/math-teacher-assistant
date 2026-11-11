@@ -44,11 +44,13 @@ node --test tests/*.test.mjs
 
 ## 开启跨设备同步
 
-1. 在 [Supabase](https://supabase.com/) 新建一个免费项目。
-2. 打开项目 SQL Editor，执行根目录的 `supabase-schema.sql`。
-3. 在 Supabase Authentication 中启用 Email 登录。开发阶段可以关闭邮件确认，正式使用建议开启。
-4. 把项目的 Project URL 和 anon public key 填入网站的「设置与数据 → 跨设备云同步」。
-5. 输入教师邮箱和密码，点击「创建账号」或「登录并同步」。
+当前部署已经预置工作台自己的 Supabase 项目和 publishable key，正常使用时不需要再创建数据库。
+
+1. 打开「设置与数据 → 跨设备云同步」。
+2. 如果这是第一次使用，输入教师邮箱并设置至少 6 位的独立密码，点击「创建工作台账号」。
+3. 完成邮箱验证后点击「登录并同步」；其他设备输入同一个账号即可合并云端档案。
+
+如需迁移到自己的另一个 Supabase 项目，在项目中执行根目录的 `supabase-schema.sql`，再替换页面里的 Project URL 和 publishable key。
 
 网页只使用 Supabase anon key，不包含 service role key。数据库启用了行级安全，每个登录用户只能读写自己的记录。
 
