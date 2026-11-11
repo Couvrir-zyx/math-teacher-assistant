@@ -8,7 +8,7 @@
   <title>数学教师工作台</title>
   <link rel="icon" href="icon.svg" type="image/svg+xml">
   <link rel="manifest" href="manifest.webmanifest">
-  <link rel="stylesheet" href="styles-v2.css?v=0.2.1">
+  <link rel="stylesheet" href="styles-v2.css?v=0.2.2">
 </head>
 <body>
   <div class="app-shell">
@@ -39,7 +39,7 @@
       <div class="sidebar-foot">
         <span class="status-dot"></span>
         <span id="storage-status">本地档案已启用</span>
-        <small>Web MVP · v0.2.1</small>
+        <small>Web MVP · v0.2.2</small>
       </div>
     </aside>
 
@@ -327,6 +327,7 @@
                 <input id="cloud-password" type="password" autocomplete="current-password" placeholder="不会保存密码">
               </label>
             </div>
+            <p class="account-hint">这里的邮箱和密码是「工作台账号」，不是刚才 Supabase 控制台的登录密码。填常用邮箱，设置一个至少 6 位的独立密码，然后点「创建工作台账号」。</p>
             <div class="settings-actions cloud-actions">
               <button class="primary-small" id="cloud-login">登录并同步</button>
               <button class="secondary-button" id="cloud-signup">创建工作台账号</button>
@@ -366,6 +367,6 @@
   </dialog>
 
   <div class="toast-region" id="toast-region" aria-live="polite"></div>
-  <script type="module" src="app-v2.js?v=0.2.1"></script>
+  <script type="module" src="app-v2.js?v=0.2.2"></script>
 </body>
 </html>

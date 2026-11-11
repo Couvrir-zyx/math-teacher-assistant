@@ -606,6 +606,14 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
 .setup-steps span { margin-top: 2px; color: var(--muted); font-size: 11px; }
 .cloud-help-actions { margin-bottom: 17px; }
 .cloud-help-actions .secondary-button { text-decoration: none; }
+.account-hint {
+  margin: 17px 22px;
+  padding: 11px 13px;
+  border-radius: 11px;
+  color: #5f6880;
+  background: #f4f6fb;
+  font-size: 11px;
+}
 .section-copy { margin: 0; padding: 0 22px 20px; color: var(--muted); }
 .settings-card > .field { padding: 0 22px 15px; }
 .secret-field { display: flex; align-items: center; gap: 8px; }
