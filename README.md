@@ -14,6 +14,7 @@
 - 阶段总结生成
 - 反馈图片卡片导出
 - 本地数据备份、旧工作台 JSON 导入
+- 可选的 Supabase 跨设备云同步
 - PWA 离线壳，可安装到桌面或手机主屏幕
 
 ## 本地运行
@@ -41,17 +42,27 @@ node --test tests/*.test.mjs
 
 `https://couvrir-zyx.github.io/math-teacher-assistant/`
 
+## 开启跨设备同步
+
+1. 在 [Supabase](https://supabase.com/) 新建一个免费项目。
+2. 打开项目 SQL Editor，执行根目录的 `supabase-schema.sql`。
+3. 在 Supabase Authentication 中启用 Email 登录。开发阶段可以关闭邮件确认，正式使用建议开启。
+4. 把项目的 Project URL 和 anon public key 填入网站的「设置与数据 → 跨设备云同步」。
+5. 输入教师邮箱和密码，点击「创建账号」或「登录并同步」。
+
+网页只使用 Supabase anon key，不包含 service role key。数据库启用了行级安全，每个登录用户只能读写自己的记录。
+
 ## 数据与安全
 
 - 学生课次档案保存在浏览器 `localStorage`，不包含 API Key。
 - DeepSeek API Key 只保存在当前浏览器，不会进入导出的档案文件。
 - Web 版直接请求 DeepSeek 接口。正式多用户版本应改用服务端代理，避免密钥暴露给浏览器。
-- 当前版本可以通过「导出全部档案」和「导入旧工作台 JSON」迁移数据，但尚未实现自动跨设备同步。
+- 未登录 Supabase 时，档案只保存在本机；登录后会在本机与云端按课次编号合并。
+- 可以通过「导出全部档案」和「导入旧工作台 JSON」继续做离线备份。
 
 ## 下一阶段
 
-1. 接入 Supabase 登录、数据库和私有存储。
-2. 将 `store-v2.js` 替换为云同步适配器，同时保留离线草稿。
-3. 接入题库索引和题目图片对象存储。
-4. 增加课后练习组卷、教师解析版和 Word/PDF 导出。
-5. 桌面版继续负责 WPS 切题和题库生产，网页端负责日常查询与使用。
+1. 创建 Supabase 项目并实际跑通双设备同步。
+2. 接入题库索引和题目图片对象存储。
+3. 增加课后练习组卷、教师解析版和 Word/PDF 导出。
+4. 桌面版继续负责 WPS 切题和题库生产，网页端负责日常查询与使用。

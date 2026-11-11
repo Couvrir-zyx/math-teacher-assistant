@@ -2,6 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { analyzeImages, generateFeedback, visibleLength } from "../api-v2.js";
 import { store } from "../store-v2.js";
+import { cloud, mergeData } from "../cloud-v2.js";
 
 const settings = {
   apiKey: "test-key",
@@ -148,4 +149,60 @@ test("旧工作台 JSON 能导入学生课次", () => {
   assert.equal(count, 1);
   assert.equal(store.studentsWithCounts()[0].name, "海澄");
   assert.match(store.lessonsFor("海澄")[0].feedback, /函数定义域/);
+});
+
+test("本机与云端课次可按编号合并", () => {
+  const merged = mergeData({
+    lessons: [{
+      id: "same",
+      date: "2026-11-01",
+      createdAt: "2026-11-01T10:00:00Z",
+      updatedAt: "2026-11-01T12:00:00Z",
+      feedback: "本机新版"
+    }],
+    summaries: []
+  }, {
+    lessons: [{
+      id: "same",
+      date: "2026-11-01",
+      createdAt: "2026-11-01T10:00:00Z",
+      updatedAt: "2026-11-01T11:00:00Z",
+      feedback: "云端旧版"
+    }, {
+      id: "cloud-only",
+      date: "2026-11-02",
+      createdAt: "2026-11-02T10:00:00Z",
+      feedback: "云端独有"
+    }],
+    summaries: []
+  });
+  assert.equal(merged.lessons.length, 2);
+  assert.equal(merged.lessons.find(item => item.id === "same").feedback, "本机新版");
+});
+
+test("Supabase 云同步使用当前用户令牌", async () => {
+  const calls = [];
+  globalThis.fetch = async (url, options) => {
+    calls.push({ url, options });
+    if (options.method === "POST") return new Response("", { status: 201 });
+    return new Response(JSON.stringify([{ payload: { lessons: [], summaries: [] } }]), {
+      status: 200,
+      headers: { "Content-Type": "application/json" }
+    });
+  };
+  const config = { url: "https://demo.supabase.co", anonKey: "anon", email: "teacher@example.com" };
+  const session = {
+    accessToken: "access",
+    refreshToken: "refresh",
+    expiresAt: Date.now() + 3600000,
+    userId: "user-1",
+    email: "teacher@example.com"
+  };
+  await cloud.pull(config, session);
+  await cloud.push(config, session, { version: 1, lessons: [], summaries: [] });
+  assert.equal(calls.length, 2);
+  assert.match(calls[0].url, /workbench_state/);
+  assert.equal(calls[0].options.headers.Authorization, "Bearer access");
+  assert.equal(calls[1].options.headers.apikey, "anon");
+  assert.match(calls[1].options.body, /"user_id":"user-1"/);
 });

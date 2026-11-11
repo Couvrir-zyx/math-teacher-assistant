@@ -1,6 +1,7 @@
 import { store, makeId, todayString } from "./store-v2.js";
 import { analyzeImages, generateFeedback, generateSummary, testConnection, visibleLength } from "./api-v2.js";
 import { downloadFeedbackCard } from "./card-v2.js";
+import { cloud, mergeData } from "./cloud-v2.js";
 
 const $ = selector => document.querySelector(selector);
 const $$ = selector => [...document.querySelectorAll(selector)];
@@ -14,7 +15,11 @@ const state = {
   selectedStudent: "",
   selectedLesson: null,
   studentContext: "",
-  busy: false
+  busy: false,
+  cloudConfig: cloud.getConfig(),
+  cloudSession: cloud.getSession(),
+  cloudTimer: null,
+  syncing: false
 };
 
 const els = {
@@ -72,6 +77,7 @@ function init() {
   bindLibraryView();
   bindSettings();
   hydrateSettings();
+  hydrateCloud();
   renderAll();
   if (!state.settings.apiKey && !localStorage.getItem("math-teacher-workbench.setupSeen")) {
     setTimeout(openSetupModal, 350);
@@ -79,6 +85,7 @@ function init() {
   if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
     navigator.serviceWorker.register("./sw.js").catch(() => {});
   }
+  if (state.cloudSession) syncCloud(true);
 }
 
 function bindNavigation() {
@@ -180,6 +187,7 @@ function bindSettings() {
     const count = store.loadDemo();
     state.data = store.getData();
     renderAll();
+    queueCloudPush();
     toast(count ? `已载入 ${count} 条演示课次` : "演示数据已经载入过了");
   });
   $("#modal-save-key").addEventListener("click", event => {
@@ -194,6 +202,11 @@ function bindSettings() {
   els.settingsModal.addEventListener("close", () => {
     localStorage.setItem("math-teacher-workbench.setupSeen", "1");
   });
+  $("#cloud-login").addEventListener("click", cloudLogin);
+  $("#cloud-signup").addEventListener("click", cloudSignUp);
+  $("#cloud-push").addEventListener("click", () => syncCloud(false));
+  $("#cloud-pull").addEventListener("click", () => pullCloud(false));
+  $("#cloud-logout").addEventListener("click", cloudLogout);
 }
 
 function renderAll() {
@@ -338,6 +351,7 @@ async function handleGenerate() {
       source: "web"
     };
     store.upsertLesson(lesson);
+    queueCloudPush();
     state.currentDraft = lesson;
     state.selectedLesson = lesson;
     setProgress("反馈已生成", "已自动保存到学生档案", 100);
@@ -390,6 +404,7 @@ function saveFeedbackChanges() {
     updatedAt: new Date().toISOString()
   };
   store.upsertLesson(state.currentDraft);
+  queueCloudPush();
   renderAll();
   toast("修改已保存到学生档案");
 }
@@ -534,6 +549,7 @@ async function handleSummary() {
       createdAt: new Date().toISOString()
     };
     store.upsertSummary(summary);
+    queueCloudPush();
     state.data = store.getData();
     state.selectedLesson = { ...summary, summary: true };
     renderAll();
@@ -591,6 +607,155 @@ function renderStorageStats() {
   $("#storage-status").textContent = `${state.data.lessons.length} 条反馈 · 本地保存`;
 }
 
+function hydrateCloud() {
+  state.cloudConfig = cloud.getConfig();
+  state.cloudSession = cloud.getSession();
+  $("#cloud-url").value = state.cloudConfig.url || "";
+  $("#cloud-anon-key").value = state.cloudConfig.anonKey || "";
+  $("#cloud-email").value = state.cloudConfig.email || "";
+  setCloudBadge(state.cloudSession ? `已登录 ${state.cloudSession.email || ""}` : "未登录", Boolean(state.cloudSession));
+}
+
+function cloudInputs() {
+  const config = cloud.saveConfig({
+    url: $("#cloud-url").value,
+    anonKey: $("#cloud-anon-key").value,
+    email: $("#cloud-email").value
+  });
+  if (!config.url || !config.anonKey) {
+    throw new Error("请先填写 Supabase Project URL 和 anon key");
+  }
+  state.cloudConfig = config;
+  return config;
+}
+
+async function cloudLogin() {
+  const button = $("#cloud-login");
+  button.disabled = true;
+  button.textContent = "登录中…";
+  try {
+    const config = cloudInputs();
+    const email = $("#cloud-email").value.trim();
+    const password = $("#cloud-password").value;
+    if (!email || !password) throw new Error("请填写登录邮箱和密码");
+    state.cloudSession = await cloud.signIn(config, email, password);
+    $("#cloud-password").value = "";
+    hydrateCloud();
+    const ok = await syncCloud(true);
+    toast(ok ? "云端登录成功，本机与云端档案已合并" : "登录成功，但首次同步失败");
+  } catch (error) {
+    toast(error.message, true);
+  } finally {
+    button.disabled = false;
+    button.textContent = "登录并同步";
+  }
+}
+
+async function cloudSignUp() {
+  const button = $("#cloud-signup");
+  button.disabled = true;
+  button.textContent = "创建中…";
+  try {
+    const config = cloudInputs();
+    const email = $("#cloud-email").value.trim();
+    const password = $("#cloud-password").value;
+    if (!email || password.length < 6) throw new Error("请填写邮箱和至少 6 位密码");
+    const result = await cloud.signUp(config, email, password);
+    if (result.access_token) {
+      state.cloudSession = await cloud.signIn(config, email, password);
+      $("#cloud-password").value = "";
+      hydrateCloud();
+      await syncCloud(true);
+      toast("账号已创建并完成首次同步");
+    } else {
+      toast("账号已创建，请到邮箱完成验证后登录");
+    }
+  } catch (error) {
+    toast(error.message, true);
+  } finally {
+    button.disabled = false;
+    button.textContent = "创建账号";
+  }
+}
+
+function queueCloudPush() {
+  if (!state.cloudSession) return;
+  clearTimeout(state.cloudTimer);
+  state.cloudTimer = setTimeout(() => syncCloud(true), 700);
+}
+
+async function syncCloud(silent = false) {
+  if (!state.cloudSession) return false;
+  if (state.syncing) {
+    clearTimeout(state.cloudTimer);
+    state.cloudTimer = setTimeout(() => syncCloud(true), 900);
+    return false;
+  }
+  state.syncing = true;
+  setCloudBadge("同步中…", true);
+  try {
+    const remote = await cloud.pull(state.cloudConfig, state.cloudSession);
+    const merged = remote ? mergeData(store.getData(), remote) : store.getData();
+    store.saveData(merged);
+    state.data = store.getData();
+    await cloud.push(state.cloudConfig, state.cloudSession, state.data);
+    renderAll();
+    setCloudBadge(`已同步 ${state.cloudSession.email || ""}`, true);
+    if (!silent) toast("本机与云端档案已同步");
+    return true;
+  } catch (error) {
+    setCloudBadge("同步失败", false);
+    if (!silent) toast(error.message, true);
+    return false;
+  } finally {
+    state.syncing = false;
+  }
+}
+
+async function pullCloud(notify = true) {
+  if (!state.cloudSession) {
+    openCloudSetup();
+    return;
+  }
+  try {
+    setCloudBadge("拉取中…", true);
+    const remote = await cloud.pull(state.cloudConfig, state.cloudSession);
+    if (!remote) {
+      setCloudBadge("云端暂无档案", true);
+      if (notify) toast("云端还没有档案，请先同步本机数据", true);
+      return;
+    }
+    const merged = mergeData(store.getData(), remote);
+    store.saveData(merged);
+    state.data = store.getData();
+    renderAll();
+    setCloudBadge(`已同步 ${state.cloudSession.email || ""}`, true);
+    if (notify) toast("云端档案已拉取并合并");
+  } catch (error) {
+    setCloudBadge("同步失败", false);
+    if (notify) toast(error.message, true);
+  }
+}
+
+function cloudLogout() {
+  cloud.clearSession();
+  state.cloudSession = null;
+  setCloudBadge("未登录", false);
+  toast("已退出云端账号，本机数据仍然保留");
+}
+
+function setCloudBadge(text, ok) {
+  const badge = $("#cloud-badge");
+  badge.textContent = text;
+  badge.classList.toggle("is-ok", Boolean(ok));
+}
+
+function openCloudSetup() {
+  setView("settings");
+  $("#cloud-url").focus();
+  toast("请先填写并登录 Supabase 云同步", true);
+}
+
 function exportData() {
   const payload = JSON.stringify(store.exportData(), null, 2);
   const blob = new Blob([payload], { type: "application/json;charset=utf-8" });
@@ -621,6 +786,7 @@ async function importFiles(files) {
   const count = store.importObjects(objects, hints);
   state.data = store.getData();
   renderAll();
+  queueCloudPush();
   toast(`成功导入 ${count} 条课次`);
 }
 

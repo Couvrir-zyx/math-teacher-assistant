@@ -39,7 +39,7 @@
       <div class="sidebar-foot">
         <span class="status-dot"></span>
         <span id="storage-status">本地档案已启用</span>
-        <small>Web MVP · v0.1</small>
+        <small>Web MVP · v0.2</small>
       </div>
     </aside>
 
@@ -272,7 +272,7 @@
               </div>
               <span class="muted" id="data-size">0 KB</span>
             </div>
-            <p class="section-copy">当前版本把学生档案保存在本机浏览器。建议定期导出备份；下一阶段会接入云端账号同步。</p>
+            <p class="section-copy">学生档案默认保存在本机浏览器。可以导出备份，也可以在下方登录 Supabase 开启跨设备同步。</p>
             <div class="data-actions">
               <button class="secondary-button" id="export-data">导出全部档案</button>
               <label class="secondary-button file-button">
@@ -287,7 +287,47 @@
             </div>
             <div class="notice-card">
               <strong>关于跨设备</strong>
-              <p>这一版是可用的 Web MVP。数据层已经独立封装，下一步接入 Supabase 登录与数据库后，即可把浏览器本地存储切换成跨设备同步，不需要重做界面。</p>
+              <p>本机档案不会自动公开。登录云同步后，系统会按学生和课次合并本机与云端记录；DeepSeek API Key 始终不会上传。</p>
+            </div>
+          </section>
+
+          <section class="card settings-card cloud-card">
+            <div class="card-heading">
+              <div>
+                <span class="section-number">03</span>
+                <h3>跨设备云同步</h3>
+              </div>
+              <span class="connection-badge" id="cloud-badge">未登录</span>
+            </div>
+            <p class="section-copy">使用你自己的 Supabase 项目保存学生课次。DeepSeek Key 不会上传；云同步只包含学生姓名、课次和反馈正文。</p>
+            <div class="cloud-grid">
+              <label class="field field-wide">
+                <span>Supabase Project URL</span>
+                <input id="cloud-url" type="url" placeholder="https://xxxx.supabase.co">
+              </label>
+              <label class="field field-wide">
+                <span>Supabase anon key</span>
+                <input id="cloud-anon-key" type="password" autocomplete="off" placeholder="公开 anon key">
+              </label>
+              <label class="field">
+                <span>邮箱</span>
+                <input id="cloud-email" type="email" autocomplete="username" placeholder="登录邮箱">
+              </label>
+              <label class="field">
+                <span>密码</span>
+                <input id="cloud-password" type="password" autocomplete="current-password" placeholder="不会保存密码">
+              </label>
+            </div>
+            <div class="settings-actions cloud-actions">
+              <button class="primary-small" id="cloud-login">登录并同步</button>
+              <button class="secondary-button" id="cloud-signup">创建账号</button>
+              <button class="secondary-button" id="cloud-push">上传本机档案</button>
+              <button class="secondary-button" id="cloud-pull">从云端拉取</button>
+              <button class="text-button" id="cloud-logout">退出</button>
+            </div>
+            <div class="notice-card">
+              <strong>第一次配置</strong>
+              <p>在 Supabase 新建项目后执行项目里的 <code>supabase-schema.sql</code>，再填入这里的 URL 和 anon key。详细步骤见 README。</p>
             </div>
           </section>
         </div>
