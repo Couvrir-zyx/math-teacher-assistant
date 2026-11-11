@@ -22,10 +22,12 @@
 
 ```bash
 cd work/site-review-20261111
-node ../serve-site-v2.mjs
+node server.mjs
 ```
 
 打开 `http://127.0.0.1:4173/`。直接双击 `index.html` 时，浏览器的 ES Module 和剪贴板权限可能受限，建议始终通过本地 HTTP 服务测试。
+
+Windows 也可以双击 `启动预览.cmd`。
 
 ## 测试
 

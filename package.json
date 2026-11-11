@@ -5,7 +5,7 @@
   "type": "module",
   "description": "高中数学课堂反馈与学生课次档案 PWA",
   "scripts": {
-    "serve": "node ../serve-site-v2.mjs",
+    "serve": "node server.mjs",
     "test": "node --test tests/*.test.mjs"
   }
 }
