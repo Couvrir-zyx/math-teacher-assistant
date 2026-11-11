@@ -1,0 +1,19 @@
+{
+  "name": "数学教师工作台",
+  "short_name": "数学工作台",
+  "description": "高中数学课堂反馈、学生课次档案与阶段总结工作台",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f4f6fb",
+  "theme_color": "#f4f6fb",
+  "lang": "zh-CN",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

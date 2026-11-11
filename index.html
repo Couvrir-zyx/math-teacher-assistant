@@ -1,222 +1,322 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>数学教师助手 - 图片话术生成工具</title>
-    <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f5f7fb">
+  <meta name="description" content="高中数学课堂反馈、学生课次档案与阶段总结工作台">
+  <title>数学教师工作台</title>
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="stylesheet" href="styles-v2.css">
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1><i class="fas fa-chalkboard-teacher"></i> 数学教师助手</h1>
-            <p class="subtitle">上传课堂图片，自动生成微信群话术</p>
-        </header>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <a class="brand" href="#write" aria-label="数学教师工作台首页">
+        <span class="brand-mark">∑</span>
+        <span>
+          <strong>数学教师工作台</strong>
+          <small>高中数学 · 课堂反馈</small>
+        </span>
+      </a>
 
-        <div class="main-content">
-            <!-- 左侧：图片上传和识别区域 -->
-            <div class="left-panel">
-                <div class="upload-area" id="uploadArea">
-                    <div class="upload-icon">
-                        <i class="fas fa-cloud-upload-alt"></i>
-                    </div>
-                    <h3>上传课堂图片</h3>
-                    <p>拖放图片文件到此区域，或点击选择文件</p>
-                    <input type="file" id="fileInput" accept="image/*" hidden>
-                    <button class="btn btn-primary" id="selectFileBtn">
-                        <i class="fas fa-image"></i> 选择图片
-                    </button>
-                    <div class="file-types">
-                        支持格式：JPG、PNG、GIF、BMP
-                    </div>
-                </div>
+      <nav class="main-nav" aria-label="主导航">
+        <button class="nav-item is-active" data-view="write">
+          <span class="nav-icon">✦</span>
+          <span>写反馈</span>
+        </button>
+        <button class="nav-item" data-view="students">
+          <span class="nav-icon">人</span>
+          <span>学生库</span>
+        </button>
+        <button class="nav-item" data-view="settings">
+          <span class="nav-icon">⚙</span>
+          <span>设置与数据</span>
+        </button>
+      </nav>
 
-                <div class="image-preview" id="imagePreview" style="display: none;">
-                    <div class="preview-header">
-                        <h4>图片预览</h4>
-                        <button class="btn btn-small" id="changeImageBtn">
-                            <i class="fas fa-exchange-alt"></i> 更换图片
-                        </button>
-                    </div>
-                    <div class="preview-container">
-                        <img id="previewImage" src="" alt="预览图片">
-                    </div>
-                    <div class="preview-actions">
-                        <button class="btn btn-secondary" id="recognizeBtn">
-                            <i class="fas fa-search"></i> 识别图片内容
-                        </button>
-                        <button class="btn btn-danger" id="clearImageBtn">
-                            <i class="fas fa-trash"></i> 清除图片
-                        </button>
-                    </div>
-                </div>
+      <div class="sidebar-foot">
+        <span class="status-dot"></span>
+        <span id="storage-status">本地档案已启用</span>
+        <small>Web MVP · v0.1</small>
+      </div>
+    </aside>
 
-                <div class="recognition-result" id="recognitionResult" style="display: none;">
-                    <div class="result-header">
-                        <h4><i class="fas fa-file-alt"></i> 识别结果</h4>
-                        <div class="recognition-status" id="recognitionStatus">
-                            <i class="fas fa-spinner fa-spin"></i> 识别中...
-                        </div>
-                    </div>
-                    <div class="result-content">
-                        <textarea id="recognizedText" placeholder="识别到的文字将显示在这里..." readonly></textarea>
-                        <div class="result-actions">
-                            <button class="btn btn-small" id="copyTextBtn">
-                                <i class="fas fa-copy"></i> 复制文字
-                            </button>
-                            <button class="btn btn-small" id="clearTextBtn">
-                                <i class="fas fa-eraser"></i> 清空
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
+    <main class="main">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">AFTER-CLASS WORKSPACE</p>
+          <h1 id="page-title">写课堂反馈</h1>
+        </div>
+        <div class="topbar-actions">
+          <button class="icon-button" id="quick-settings" title="API 设置" aria-label="API 设置">⚙</button>
+          <button class="avatar-button" id="teacher-avatar" title="数学教师工作台">师</button>
+        </div>
+      </header>
 
-            <!-- 右侧：话术生成和编辑区域 -->
-            <div class="right-panel">
-                <div class="template-selection">
-                    <h3><i class="fas fa-layer-group"></i> 选择话术模板</h3>
-                    <div class="template-buttons">
-                        <button class="template-btn active" data-template="new-lesson">
-                            <i class="fas fa-book-open"></i> 新课讲解
-                        </button>
-                        <button class="template-btn" data-template="exercise">
-                            <i class="fas fa-pencil-alt"></i> 习题讲解
-                        </button>
-                        <button class="template-btn" data-template="review">
-                            <i class="fas fa-redo"></i> 复习总结
-                        </button>
-                        <button class="template-btn" data-template="custom">
-                            <i class="fas fa-edit"></i> 自定义模板
-                        </button>
-                    </div>
-                </div>
-
-                <div class="template-preview">
-                    <h4>模板预览</h4>
-                    <div class="template-content" id="templatePreview">
-                        【{日期}课堂总结】
-
-📚 教学内容：{教学内容}
-
-🎯 重点难点：
-{重点内容}
-
-👨‍🎓 学生表现：
-• 积极参与：{学生姓名}
-• 掌握情况：{掌握程度}
-• 需要加强：{薄弱环节}
-
-💡 课后建议：
-1. 复习{知识点}
-2. 完成{作业}
-                    </div>
-                </div>
-
-                <div class="speech-editor">
-                    <h3><i class="fas fa-edit"></i> 编辑生成的话术</h3>
-                    <div class="editor-tools">
-                        <button class="tool-btn" id="fillTemplateBtn">
-                            <i class="fas fa-magic"></i> 自动填充
-                        </button>
-                        <button class="tool-btn" id="resetTemplateBtn">
-                            <i class="fas fa-undo"></i> 重置模板
-                        </button>
-                        <button class="tool-btn ai-btn" id="generateSpeechBtn">
-                            <i class="fas fa-robot"></i> 智能生成
-                        </button>
-                        
-                        <!-- 快捷工具 -->
-                        <div class="quick-tools">
-                            <button class="tool-btn math-term" data-text="函数">
-                                <i class="fas fa-superscript"></i> 函数
-                            </button>
-                            <button class="tool-btn math-term" data-text="方程">
-                                <i class="fas fa-equals"></i> 方程
-                            </button>
-                            <button class="tool-btn math-term" data-text="几何">
-                                <i class="fas fa-shapes"></i> 几何
-                            </button>
-                            <button class="tool-btn emoji-btn" data-text="📚">
-                                📚
-                            </button>
-                            <button class="tool-btn emoji-btn" data-text="🎯">
-                                🎯
-                            </button>
-                            <button class="tool-btn emoji-btn" data-text="👨‍🎓">
-                                👨‍🎓
-                            </button>
-                            <button class="tool-btn format-btn" data-format="bold">
-                                <i class="fas fa-bold"></i>
-                            </button>
-                            <button class="tool-btn format-btn" data-format="list">
-                                <i class="fas fa-list"></i>
-                            </button>
-                        </div>
-                        
-                        <div class="variable-list">
-                            <span class="variable-tag">{日期}</span>
-                            <span class="variable-tag">{教学内容}</span>
-                            <span class="variable-tag">{重点内容}</span>
-                            <span class="variable-tag">{学生姓名}</span>
-                        </div>
-                    </div>
-                    <textarea id="speechEditor" placeholder="编辑你的话术内容..."></textarea>
-                    <div class="editor-actions">
-                        <button class="btn btn-success" id="generateSpeechBtn">
-                            <i class="fas fa-robot"></i> 智能生成
-                        </button>
-                        <button class="btn btn-primary" id="copySpeechBtn">
-                            <i class="fas fa-copy"></i> 复制话术
-                        </button>
-                        <button class="btn btn-secondary" id="saveTemplateBtn">
-                            <i class="fas fa-save"></i> 保存模板
-                        </button>
-                    </div>
-                </div>
-
-                <div class="history-section">
-                    <h3><i class="fas fa-history"></i> 历史记录</h3>
-                    <div class="history-list" id="historyList">
-                        <div class="history-empty">
-                            <i class="fas fa-clock"></i>
-                            <p>暂无历史记录</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
+      <section class="view is-active" id="view-write">
+        <div class="page-intro">
+          <div>
+            <span class="pill">智能课堂整理</span>
+            <h2>把板书交给工作台，<br>把时间留给教学。</h2>
+            <p>上传课堂截图，自动整理课堂内容、学习表现和课后建议。支持单讲与组课。</p>
+          </div>
+          <div class="intro-stat">
+            <span id="today-count">0</span>
+            <small>条反馈记录</small>
+          </div>
         </div>
 
-        <footer>
-            <div class="footer-content">
-                <p>数学教师助手 v1.0 | 专为高中数学教师设计</p>
-                <p class="tips">
-                    <i class="fas fa-lightbulb"></i> 提示：生成的话术可以直接复制粘贴到微信群
-                </p>
-            </div>
-        </footer>
-    </div>
+        <div class="workspace-grid">
+          <div class="stack">
+            <section class="card">
+              <div class="card-heading">
+                <div>
+                  <span class="section-number">01</span>
+                  <h3>课程信息</h3>
+                </div>
+                <label class="switch-line">
+                  <input type="checkbox" id="group-mode">
+                  <span class="switch"></span>
+                  <span>组课（多人）</span>
+                </label>
+              </div>
 
-    <!-- 模态框 -->
-    <div class="modal" id="successModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3><i class="fas fa-check-circle"></i> 操作成功</h3>
-                <button class="modal-close">&times;</button>
+              <div class="field-grid">
+                <label class="field field-wide">
+                  <span id="student-label">学生姓名</span>
+                  <input id="student-name" type="text" list="student-list-data" autocomplete="off" placeholder="输入学生姓名">
+                  <datalist id="student-list-data"></datalist>
+                </label>
+                <label class="field">
+                  <span>课型</span>
+                  <select id="course">
+                    <option>同步</option>
+                    <option>一轮复习</option>
+                    <option>二轮专题</option>
+                    <option>提升</option>
+                  </select>
+                </label>
+                <label class="field">
+                  <span>学生水平</span>
+                  <select id="level">
+                    <option>基础巩固</option>
+                    <option selected>稳步提升</option>
+                    <option>拔尖冲刺</option>
+                  </select>
+                </label>
+                <label class="field field-wide">
+                  <span>专题 <em>可留空，由截图识别</em></span>
+                  <input id="topic" type="text" placeholder="例如：圆与椭圆综合">
+                </label>
+              </div>
+            </section>
+
+            <section class="card">
+              <div class="card-heading">
+                <div>
+                  <span class="section-number">02</span>
+                  <h3>课堂素材</h3>
+                </div>
+                <span class="muted" id="image-count">0 张</span>
+              </div>
+
+              <div class="dropzone" id="dropzone" tabindex="0" role="button" aria-label="上传课堂截图">
+                <input id="image-input" type="file" accept="image/png,image/jpeg,image/webp,image/bmp" multiple hidden>
+                <div class="drop-icon">＋</div>
+                <strong>拖入截图，或点击选择</strong>
+                <span>也可以直接按 Ctrl+V 粘贴</span>
+                <small>支持多张；上传前会自动压缩，减少等待时间</small>
+              </div>
+
+              <div class="image-grid" id="image-grid"></div>
+
+              <label class="field">
+                <span>课堂补充 <em>可选，但越具体越准确</em></span>
+                <textarea id="teacher-note" rows="4" placeholder="例如：学生对椭圆定义能跟下来，但焦点三角形面积公式还容易混。"></textarea>
+              </label>
+            </section>
+
+            <section class="generate-card">
+              <div class="progress-copy">
+                <strong id="progress-title">准备生成</strong>
+                <span id="progress-detail">填写课程信息并上传至少一张课堂截图</span>
+              </div>
+              <div class="progress-track"><span id="progress-bar"></span></div>
+              <button class="primary-button" id="generate-button">
+                <span>生成课堂反馈</span>
+                <span aria-hidden="true">→</span>
+              </button>
+            </section>
+          </div>
+
+          <aside class="card result-card">
+            <div class="card-heading result-heading">
+              <div>
+                <span class="section-number">03</span>
+                <h3>反馈正文</h3>
+              </div>
+              <span class="char-count" id="char-count">0 / 1000</span>
             </div>
-            <div class="modal-body">
-                <p id="modalMessage">话术已复制到剪贴板！</p>
+
+            <div class="empty-result" id="empty-result">
+              <div class="paper-lines" aria-hidden="true">
+                <span></span><span></span><span></span><span></span><span></span>
+              </div>
+              <strong>反馈会显示在这里</strong>
+              <p>生成后可以直接修改，也可以从 Word、微信或备忘录粘贴纯文本回来。</p>
             </div>
-            <div class="modal-footer">
-                <button class="btn btn-primary modal-close-btn">确定</button>
+
+            <textarea class="feedback-editor" id="feedback-editor" placeholder="生成后可以继续修改……" hidden></textarea>
+
+            <div class="result-actions" id="result-actions" hidden>
+              <button class="secondary-button" id="copy-feedback">复制反馈</button>
+              <button class="secondary-button" id="paste-feedback">粘贴回填</button>
+              <button class="secondary-button" id="download-card">导出图片</button>
+              <button class="primary-small" id="save-feedback">保存修改</button>
             </div>
+          </aside>
         </div>
-    </div>
+      </section>
 
-    <!-- 加载脚本 -->
-    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js"></script>
-    <script src="api-config.js"></script>
-    <script src="app.js"></script>
+      <section class="view" id="view-students">
+        <div class="library-layout">
+          <aside class="card student-list-card">
+            <div class="card-heading">
+              <div>
+                <span class="section-number">01</span>
+                <h3>学生与组课</h3>
+              </div>
+              <span class="muted" id="student-count">0</span>
+            </div>
+            <label class="search-box">
+              <span>⌕</span>
+              <input id="student-search" type="search" placeholder="搜索姓名或组课">
+            </label>
+            <div class="student-list" id="student-list"></div>
+          </aside>
+
+          <section class="card lesson-panel">
+            <div class="empty-library" id="empty-library">
+              <span class="empty-symbol">人</span>
+              <strong>还没有学生档案</strong>
+              <p>生成第一条反馈后，学生会自动出现在这里。也可以从设置中导入原来的工作台数据。</p>
+            </div>
+
+            <div id="lesson-content" hidden>
+              <div class="lesson-panel-head">
+                <div>
+                  <p class="eyebrow">STUDENT ARCHIVE</p>
+                  <h2 id="selected-student-name"></h2>
+                  <p id="selected-student-meta" class="muted"></p>
+                </div>
+                <button class="primary-small" id="generate-summary">生成阶段总结</button>
+              </div>
+              <div class="lesson-layout">
+                <div class="lesson-list" id="lesson-list"></div>
+                <article class="lesson-detail">
+                  <div class="lesson-detail-head">
+                    <div>
+                      <span class="lesson-badge" id="detail-level"></span>
+                      <h3 id="detail-topic"></h3>
+                      <p id="detail-meta" class="muted"></p>
+                    </div>
+                    <button class="text-button" id="copy-lesson">复制</button>
+                  </div>
+                  <div class="feedback-preview" id="detail-feedback"></div>
+                </article>
+              </div>
+            </div>
+          </section>
+        </div>
+      </section>
+
+      <section class="view" id="view-settings">
+        <div class="settings-grid">
+          <section class="card settings-card">
+            <div class="card-heading">
+              <div>
+                <span class="section-number">01</span>
+                <h3>DeepSeek 接入</h3>
+              </div>
+              <span class="connection-badge" id="api-badge">未配置</span>
+            </div>
+            <p class="section-copy">第一版使用浏览器本地密钥。密钥只保存在当前浏览器，不会写入网页源码或导出的学生档案。</p>
+            <label class="field">
+              <span>API Key</span>
+              <div class="secret-field">
+                <input id="api-key" type="password" autocomplete="off" placeholder="sk-...">
+                <button class="text-button" id="toggle-key">显示</button>
+              </div>
+            </label>
+            <label class="field">
+              <span>模型</span>
+              <input id="api-model" type="text" value="deepseek-chat">
+            </label>
+            <label class="field">
+              <span>API 地址</span>
+              <input id="api-endpoint" type="url" value="https://api.deepseek.com/chat/completions">
+            </label>
+            <div class="settings-actions">
+              <button class="primary-small" id="save-api">保存设置</button>
+              <button class="secondary-button" id="test-api">测试连接</button>
+            </div>
+          </section>
+
+          <section class="card settings-card">
+            <div class="card-heading">
+              <div>
+                <span class="section-number">02</span>
+                <h3>数据与迁移</h3>
+              </div>
+              <span class="muted" id="data-size">0 KB</span>
+            </div>
+            <p class="section-copy">当前版本把学生档案保存在本机浏览器。建议定期导出备份；下一阶段会接入云端账号同步。</p>
+            <div class="data-actions">
+              <button class="secondary-button" id="export-data">导出全部档案</button>
+              <label class="secondary-button file-button">
+                导入旧工作台 JSON
+                <input id="import-files" type="file" accept=".json,application/json" multiple hidden>
+              </label>
+              <label class="secondary-button file-button">
+                导入整个学生文件夹
+                <input id="import-folder" type="file" accept=".json,application/json" webkitdirectory multiple hidden>
+              </label>
+              <button class="secondary-button" id="load-demo">载入演示数据</button>
+            </div>
+            <div class="notice-card">
+              <strong>关于跨设备</strong>
+              <p>这一版是可用的 Web MVP。数据层已经独立封装，下一步接入 Supabase 登录与数据库后，即可把浏览器本地存储切换成跨设备同步，不需要重做界面。</p>
+            </div>
+          </section>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <dialog class="modal" id="settings-modal">
+    <form method="dialog" class="modal-card">
+      <div class="modal-head">
+        <div>
+          <p class="eyebrow">QUICK SETUP</p>
+          <h2>第一次使用</h2>
+        </div>
+        <button class="icon-button" value="cancel" aria-label="关闭">×</button>
+      </div>
+      <p>先填写 DeepSeek API Key，再上传课堂截图。密钥只保存在当前浏览器。</p>
+      <label class="field">
+        <span>DeepSeek API Key</span>
+        <input id="modal-api-key" type="password" autocomplete="off" placeholder="sk-...">
+      </label>
+      <div class="modal-actions">
+        <button class="secondary-button" value="cancel">稍后设置</button>
+        <button class="primary-small" id="modal-save-key" value="default">保存并开始</button>
+      </div>
+    </form>
+  </dialog>
+
+  <div class="toast-region" id="toast-region" aria-live="polite"></div>
+  <script type="module" src="app-v2.js"></script>
 </body>
 </html>

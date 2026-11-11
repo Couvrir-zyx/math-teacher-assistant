@@ -1,8 +1,8 @@
 # GitHub Pages 配置
-title: 数学教师助手
-description: 高中数学教师图片识别话术生成工具
+title: 数学教师工作台
+description: 高中数学课堂反馈、学生课次档案与阶段总结工作台
 baseurl: "" # 如果部署在子目录，填写子目录名
-url: "https://你的用户名.github.io" # 你的GitHub Pages地址
+url: "https://couvrir-zyx.github.io"
 
 # 构建设置
 markdown: kramdown

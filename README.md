@@ -1,124 +1,55 @@
-# 数学教师助手 - AI增强版
+# 数学教师工作台
 
-一个帮助数学教师上传课堂图片，自动生成微信群话术的Web应用。支持AI智能识别数学内容。
+高中数学线上教师使用的课堂反馈 Web 工作台。上传课堂截图后，使用 DeepSeek 识别课堂板块，生成单讲或组课反馈，并保存学生课次档案。
 
-## ✨ 功能特性
+这是从原「数学教师助手」重写的第一版 Web MVP。旧版位于 Git 历史中，不再作为运行入口。
 
-### 🖼️ 图片识别
-- **AI智能识别**：使用AI分析数学图片内容
-- **多API支持**：Mathpix、OpenAI、Gemini
-- **传统OCR备用**：Tesseract.js文字识别
-- **长图处理**：自动分割识别长截图
+## 当前功能
 
-### 📝 话术生成
-- **智能模板**：新课讲解、习题讲解、复习总结、自定义
-- **AI建议**：根据图片内容提供教学建议
-- **快捷编辑**：数学术语、表情符号、格式工具
-- **历史记录**：保存和加载过往记录
+- 多张课堂截图上传、拖放和剪贴板粘贴
+- 单讲 / 组课反馈
+- 基础巩固、稳步提升、拔尖冲刺三档结构区分
+- 1000 字上限和超长反馈二次压缩
+- 学生课次库、往期反馈查看和搜索
+- 阶段总结生成
+- 反馈图片卡片导出
+- 本地数据备份、旧工作台 JSON 导入
+- PWA 离线壳，可安装到桌面或手机主屏幕
 
-### ⚙️ 配置管理
-- **API配置界面**：友好的API密钥管理
-- **本地存储**：配置和记录保存在浏览器中
-- **响应式设计**：适配手机和电脑
+## 本地运行
 
-## 🚀 快速开始
+项目无需安装构建依赖，只需要 Node.js 18 或更高版本。
 
-### 在线使用
-1. 访问部署的页面
-2. 上传数学课堂图片
-3. 选择话术模板
-4. 复制生成的话术到微信群
-
-### 本地运行
-1. 下载所有文件到本地
-2. 用浏览器打开 `index.html`
-3. 无需服务器，直接使用
-
-## 🔧 API配置（可选）
-
-### 支持的AI API
-1. **Mathpix**（推荐） - 专业数学公式识别
-2. **OpenAI** - GPT-4 Vision通用识别
-3. **Google Gemini** - 免费额度可用
-
-### 配置步骤
-1. 点击右上角"API配置"按钮
-2. 选择API提供商
-3. 输入API密钥
-4. 点击"测试连接"
-5. 保存配置
-
-## 📁 文件结构
-
-```
-math-teacher-assistant/
-├── index.html          # 主页面
-├── app.js             # 主逻辑（AI识别核心）
-├── api-config.js      # API配置管理
-├── style.css          # 主样式
-├── quick-tools.css    # 快捷工具样式
-├── README.md          # 本文件
-├── DEPLOYMENT.md      # 部署说明
-├── GITHUB_DEPLOYMENT.md # GitHub部署
-├── deploy.bat         # 部署脚本
-└── 其他支持文件...
+```bash
+cd work/site-review-20261111
+node ../serve-site-v2.mjs
 ```
 
-## 🛠️ 技术栈
+打开 `http://127.0.0.1:4173/`。直接双击 `index.html` 时，浏览器的 ES Module 和剪贴板权限可能受限，建议始终通过本地 HTTP 服务测试。
 
-- **前端**：HTML5、CSS3、JavaScript (ES6+)
-- **AI识别**：Tesseract.js、AI API集成
-- **图标**：Font Awesome 6
-- **部署**：GitHub Pages、Vercel、Netlify
+## 测试
 
-## 📱 浏览器兼容性
+```bash
+node --test tests/*.test.mjs
+```
 
-- Chrome 90+ ✅
-- Firefox 88+ ✅
-- Edge 90+ ✅
-- Safari 14+ ✅
-- 移动浏览器 ✅
+## 部署
 
-## 🔄 更新日志
+主分支根目录就是 GitHub Pages 静态站点，无需构建步骤。推送到 `main` 后，GitHub Pages 会直接发布：
 
-### v1.1 - AI增强版
-- 添加AI智能识别功能
-- 支持多种AI API集成
-- 改进用户界面和体验
-- 添加API配置管理
+`https://couvrir-zyx.github.io/math-teacher-assistant/`
 
-### v1.0 - 基础版
-- 图片上传和OCR识别
-- 话术模板系统
-- 基础编辑功能
-- 历史记录
+## 数据与安全
 
-## 🤝 贡献
+- 学生课次档案保存在浏览器 `localStorage`，不包含 API Key。
+- DeepSeek API Key 只保存在当前浏览器，不会进入导出的档案文件。
+- Web 版直接请求 DeepSeek 接口。正式多用户版本应改用服务端代理，避免密钥暴露给浏览器。
+- 当前版本可以通过「导出全部档案」和「导入旧工作台 JSON」迁移数据，但尚未实现自动跨设备同步。
 
-欢迎提交Issue和Pull Request！
+## 下一阶段
 
-### 开发指南
-1. Fork本仓库
-2. 创建特性分支
-3. 提交更改
-4. 推送到分支
-5. 创建Pull Request
-
-## 📄 许可证
-
-MIT License - 详见LICENSE文件
-
-## 🙏 致谢
-
-- [Tesseract.js](https://github.com/naptha/tesseract.js) - OCR识别
-- [Font Awesome](https://fontawesome.com/) - 图标
-- [Mathpix](https://mathpix.com/) - 数学公式识别API
-- [OpenAI](https://openai.com/) - GPT API
-
-## 📞 联系
-
-如有问题或建议，请提交Issue或联系维护者。
-
----
-
-**让数学教学更轻松！** 🎯
+1. 接入 Supabase 登录、数据库和私有存储。
+2. 将 `store-v2.js` 替换为云同步适配器，同时保留离线草稿。
+3. 接入题库索引和题目图片对象存储。
+4. 增加课后练习组卷、教师解析版和 Word/PDF 导出。
+5. 桌面版继续负责 WPS 切题和题库生产，网页端负责日常查询与使用。
